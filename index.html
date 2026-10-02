@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BMIRange - weight bands for your height</title>
+<meta name="description" content="Enter your height and see the weight range for every BMI category, in kg or lb. Runs in your browser.">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; background:#171d1a; color:#eaf2ee; line-height:1.6; }
+  .wrap { max-width:680px; margin:0 auto; padding:48px 20px 60px; }
+  .logo { font-size:46px; font-weight:800; } .logo span { color:#8fe05c; }
+  .tag { font-size:19px; margin-top:10px; color:#d4e2da; }
+  .cta { display:inline-block; margin-top:26px; background:#8fe05c; color:#171d1a; font-weight:700; padding:14px 30px; border-radius:12px; text-decoration:none; }
+  h2 { font-size:21px; margin:40px 0 10px; } li { color:#aebfb5; margin-bottom:8px; } ul { margin-left:20px; }
+  .demo { margin-top:26px; background:#212b26; border-radius:14px; padding:18px; } .demo b { font-size:28px; color:#8fe05c; }
+  footer { margin-top:50px; font-size:13px; color:#7c9186; } a { color:#8fe05c; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">BMI<span>Range</span></div>
+  <div class="tag">Most BMI tools give you a number. This one starts from your height and shows the weight band for every category.</div>
+  <a class="cta" href="app.html">Open the app</a>
+  <div class="demo">At 5 ft 9 in, the healthy range is <b>125 to 169 lb</b><br>matching the CDC table for that height.</div>
+  <h2>What it does</h2>
+  <ul><li>Weight range for each CDC adult BMI category at your height</li><li>Metric or US units</li><li>A color bar and your own BMI marked by category</li></ul>
+  <footer>BMI is a screening number, not a diagnosis. Not medical advice. Static, client-side, nothing stored. <a href="https://github.com/iLanis-agent/bmirange">Source</a></footer>
+</div>
+</body>
+</html>
