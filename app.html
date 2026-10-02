@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BMIRange - weight bands for your height</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; background:#171d1a; color:#eaf2ee; line-height:1.5; }
+  .wrap { max-width:640px; margin:0 auto; padding:28px 18px 50px; }
+  h1 { font-size:28px; } h1 span { color:#8fe05c; }
+  .sub { color:#aebfb5; margin:6px 0 18px; }
+  .card { background:#212b26; border-radius:14px; padding:16px; margin-bottom:16px; }
+  .tog button { background:#2c3832; color:#eaf2ee; border:0; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:15px; }
+  .tog button.on { background:#8fe05c; color:#171d1a; font-weight:700; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; } label { display:block; font-size:13px; color:#aebfb5; margin-bottom:4px; }
+  input { background:#171d1a; color:#eaf2ee; border:1px solid #3a4a41; border-radius:8px; padding:9px; font-size:16px; width:100px; }
+  .big { font-size:34px; font-weight:800; color:#8fe05c; } .cat { font-size:18px; }
+  table { width:100%; border-collapse:collapse; font-size:15px; } td { padding:7px 4px; border-bottom:1px solid #2f3b35; } td:last-child { text-align:right; }
+  .bar { display:flex; height:16px; border-radius:8px; overflow:hidden; margin-top:10px; } .bar i { display:block; }
+  .note { font-size:12.5px; color:#8ea196; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>BMI<span>Range</span></h1>
+  <div class="sub">Start from your height: see the weight band for each BMI category, and where you sit.</div>
+  <div class="card">
+    <div class="tog"><button id="mM" class="on">Metric</button> <button id="mU">US</button></div>
+    <div class="row" id="inM"><div><label>Height (cm)</label><input id="cm" type="number" value="175"></div><div><label>Weight (kg)</label><input id="kg" type="number" value="70"></div></div>
+    <div class="row" id="inU" style="display:none"><div><label>Feet</label><input id="ft" type="number" value="5"></div><div><label>Inches</label><input id="inch" type="number" value="9"></div><div><label>Weight (lb)</label><input id="lb" type="number" value="154"></div></div>
+  </div>
+  <div class="card"><div class="big" id="bmi">-</div><div class="cat" id="cat"></div></div>
+  <div class="card"><b>Healthy weight range for this height</b><div class="big" id="rng" style="font-size:26px"></div><div class="bar" id="bar"></div>
+    <table id="tbl" style="margin-top:12px"></table></div>
+  <div class="note">Categories follow the CDC adult (20+) BMI table: under 18.5, 18.5 to under 25, 25 to under 30, 30+. BMI is a screening number, not a diagnosis, and does not account for muscle, age, or build. Not medical advice; ask a clinician about your health.</div>
+</div>
+<script src="engine.js"></script>
+<script>
+(function () {
+  var B = window.Bmi, us = false, $ = function (i) { return document.getElementById(i); };
+  var COL = ['#5aa9e6', '#8fe05c', '#f2c94c', '#f2994a', '#eb5757', '#a83a3a'];
+  function unit() { return us ? 'lb' : 'kg'; }
+  function show(kg) { return us ? Math.round(kg * B.LB_PER_KG) : B.fmt(kg, 1); }
+  function render() {
+    var cm, kg;
+    if (us) { cm = B.toCm(+$('ft').value, +$('inch').value); kg = +$('lb').value / B.LB_PER_KG; }
+    else { cm = +$('cm').value; kg = +$('kg').value; }
+    if (!(cm > 0) || !(kg > 0)) { $('bmi').textContent = '-'; $('cat').textContent = 'Enter height and weight'; return; }
+    var b = B.bmiMetric(kg, cm);
+    $('bmi').textContent = 'BMI ' + B.fmt(b, 1); $('cat').textContent = B.category(b);
+    var r = B.range(cm); $('rng').textContent = show(r.lo) + ' to ' + show(r.hi) + ' ' + unit();
+    var bands = B.bands(cm), names = B.CATS.map(function (c) { return c[1]; });
+    var rows = '', prev = 0;
+    for (var i = 0; i < 6; i++) {
+      var from = i === 0 ? null : bands[i - 1].kg, to = i < 5 ? bands[i].kg : null;
+      var txt = from === null ? 'under ' + show(to) : to === null ? show(from) + ' and up' : show(from) + ' to ' + show(to);
+      rows += '<tr><td style="color:' + COL[i] + '">&#9632; ' + names[i] + '</td><td>' + txt + ' ' + unit() + '</td></tr>';
+    }
+    $('tbl').innerHTML = rows;
+    var lo = bands[0].kg * 0.7, hi = bands[4].kg * 1.3, span = hi - lo, bar = '', last = lo;
+    var cuts = bands.map(function (x) { return x.kg; }).concat([hi]);
+    for (var j = 0; j < 6; j++) { bar += '<i style="width:' + ((cuts[j] - last) / span * 100) + '%;background:' + COL[j] + '"></i>'; last = cuts[j]; }
+    $('bar').innerHTML = bar;
+  }
+  function mode(u) { us = u; $('mM').className = u ? '' : 'on'; $('mU').className = u ? 'on' : ''; $('inM').style.display = u ? 'none' : 'flex'; $('inU').style.display = u ? 'flex' : 'none'; render(); }
+  $('mM').onclick = function () { mode(false); }; $('mU').onclick = function () { mode(true); };
+  ['cm', 'kg', 'ft', 'inch', 'lb'].forEach(function (i) { $(i).oninput = render; });
+  render();
+})();
+</script>
+</body>
+</html>
